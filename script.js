@@ -1605,25 +1605,27 @@ function renderAnnouncements() {
   const featured = sortedAnnouncements.find(a => a.featured);
   const featuredArea = document.getElementById('featuredArea');
 
-  if (featured && !search && announceFilter === 'all') {
-    featuredArea.innerHTML = `
-      <div class="featured-announcement">
-        <span class="featured-tag tag-${featured.category}">${featured.category.toUpperCase()}</span>
-        <h2 class="featured-title">${featured.title}</h2>
-        <div class="featured-body">${parseDiscordFormatting(featured.body)}</div>
-        <div class="announce-meta" style="display:flex; align-items:center; gap:8px;">
-          <span>${featured.date}</span>
-          <div class="announce-dot"></div>
-          <div style="display:inline-flex; align-items:center; gap:6px;">
-            ${getAuthorDotHTML(featured.authorPhotoUrl, featured.authorInitials, "width:18px; height:18px; font-size:0.5rem; margin:0;")}
-            <span style="font-weight: 500; color: #fff;">${featured.authorName || featured.author}</span>
+  if (featuredArea) {
+    if (featured && !search && announceFilter === 'all') {
+      featuredArea.innerHTML = `
+        <div class="featured-announcement">
+          <span class="featured-tag tag-${featured.category}">${featured.category.toUpperCase()}</span>
+          <h2 class="featured-title">${featured.title}</h2>
+          <div class="featured-body">${parseDiscordFormatting(featured.body)}</div>
+          <div class="announce-meta" style="display:flex; align-items:center; gap:8px;">
+            <span>${featured.date}</span>
+            <div class="announce-dot"></div>
+            <div style="display:inline-flex; align-items:center; gap:6px;">
+              ${getAuthorDotHTML(featured.authorPhotoUrl, featured.authorInitials, "width:18px; height:18px; font-size:0.5rem; margin:0;")}
+              <span style="font-weight: 500; color: #fff;">${featured.authorName || featured.author}</span>
+            </div>
+            <div class="announce-dot"></div>
+            <span>PINNED</span>
           </div>
-          <div class="announce-dot"></div>
-          <span>PINNED</span>
-        </div>
-      </div>`;
-  } else {
-    featuredArea.innerHTML = '';
+        </div>`;
+    } else {
+      featuredArea.innerHTML = '';
+    }
   }
 
   const rest = sortedAnnouncements.filter(a => {
