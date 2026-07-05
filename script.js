@@ -34,7 +34,7 @@ const ADMIN_EMAILS = [
 ];
 
 function isAdmin() {
-  return CURRENT_USER && ADMIN_EMAILS.includes(CURRENT_USER.email.trim());
+  return CURRENT_USER && ADMIN_EMAILS.includes(CURRENT_USER.email.trim().toLowerCase());
 }
 
 // ═════════════════════════════════════=
@@ -91,6 +91,10 @@ onAuthStateChanged(auth, async (user) => {
         CURRENT_USER.name = userData.name || CURRENT_USER.name;
         CURRENT_USER.photoURL = userData.photoURL || user.photoURL || CURRENT_USER.photoURL || '';
         CURRENT_USER.initials = userData.initials || '';
+        CURRENT_USER.bio = userData.bio || '';
+        CURRENT_USER.nickname = userData.nickname || '';
+        CURRENT_USER.speciality = userData.speciality || '';
+        CURRENT_USER.favoriteGamemode = userData.favoriteGamemode || '';
 
         if (!userData.ingameName || !userData.initials || !userData.photoURL) {
           needsSetup = true;
@@ -112,6 +116,10 @@ onAuthStateChanged(auth, async (user) => {
           ingameName: CURRENT_USER.ingameName,
           photoURL: CURRENT_USER.photoURL,
           initials: '',
+          bio: '',
+          nickname: '',
+          speciality: '',
+          favoriteGamemode: '',
           lastActive: serverTimestamp()
         });
       }
@@ -159,31 +167,31 @@ function updateAuthUI() {
   if (!area) return;
   if (CURRENT_USER) {
     const avatarHTML = getAuthorDotHTML(CURRENT_USER.photoURL, CURRENT_USER.initials || 'UN', "width: 24px; height: 24px; font-size: 0.6rem; margin: 0;");
-    const pfpHTML = `<div onclick="promptProfileSetupModal()" style="cursor: pointer; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden; ${CURRENT_USER.photoURL ? 'border: 1px solid var(--crimson);' : ''}">${avatarHTML}</div>`;
+    const pfpHTML = `<div onclick="window.promptProfileSetupModal()" style="cursor: pointer; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; overflow: hidden; ${CURRENT_USER.photoURL ? 'border: 1px solid var(--crimson);' : ''}">${avatarHTML}</div>`;
 
     area.innerHTML = `
           <div style="display:flex;gap:8px;align-items:center">
             ${pfpHTML}
-            <button class="btn-secondary" onclick="promptProfileSetupModal()">PROFILE</button>
-            <button class="btn-secondary" onclick="signOutUser()">LOG OUT</button>
+            <button class="btn-secondary" onclick="window.promptProfileSetupModal()">PROFILE</button>
+            <button class="btn-secondary" onclick="window.signOutUser()">LOG OUT</button>
           </div>
         `;
 
     if (mobileArea) {
       mobileArea.innerHTML = `
-            <button class="btn-secondary" onclick="window.toggleChatPanel(); closeMobile();" style="width: 100%;">CHAT</button>
-            <button class="btn-secondary" onclick="promptProfileSetupModal(); closeMobile();" style="width: 100%;">PROFILE</button>
-            <button class="btn-secondary" onclick="signOutUser(); closeMobile();" style="width: 100%;">LOG OUT</button>
+            <button class="btn-secondary" onclick="window.toggleChatPanel(); window.closeMobile();" style="width: 100%;">CHAT</button>
+            <button class="btn-secondary" onclick="window.promptProfileSetupModal(); window.closeMobile();" style="width: 100%;">PROFILE</button>
+            <button class="btn-secondary" onclick="window.signOutUser(); window.closeMobile();" style="width: 100%;">LOG OUT</button>
           `;
     }
 
     if (chatToggle) chatToggle.style.display = '';
     if (uploadImageTrigger) uploadImageTrigger.style.display = '';
   } else {
-    area.innerHTML = `<button class="btn-secondary" id="authButton" onclick="openLoginModal()">LOG IN</button>`;
+    area.innerHTML = `<button class="btn-secondary" id="authButton" onclick="window.openLoginModal()">LOG IN</button>`;
     if (mobileArea) {
       mobileArea.innerHTML = `
-            <button class="btn-secondary" onclick="openLoginModal(); closeMobile();" style="width: 100%;">LOG IN</button>
+            <button class="btn-secondary" onclick="window.openLoginModal(); window.closeMobile();" style="width: 100%;">LOG IN</button>
           `;
     }
     if (chatToggle) chatToggle.style.display = 'none';
@@ -206,31 +214,15 @@ function openLoginModal() {
   openModal();
 }
 
-// FIREBASE: Sign in with Google using FirebaseAuth
-function signInWithGoogle() {
-  const provider = new GoogleAuthProvider();
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      closeModal();
-      setTimeout(() => {
-        promptProfileSetupModal();
-      }, 250);
-    })
-    .catch((error) => {
-      document.getElementById('gsiStatus').textContent = 'Sign-in failed: ' + error.message;
-    });
-}
-
-// FIREBASE: Sign out
-function signOutUser() {
-  firebaseSignOut(auth).catch(err => console.error('Sign-out error:', err));
-}
-
-// Prompt user to complete profile setup (in-game name, initials, and profile picture)
-function promptProfileSetupModal() {
-  const preName = (CURRENT_USER && CURRENT_USER.ingameName) ? CURRENT_USER.ingameName : (CURRENT_USER && CURRENT_USER.name) || '';
-  const preInitials = (CURRENT_USER && CURRENT_USER.initials) ? CURRENT_USER.initials : '';
-  const prePhoto = (CURRENT_USER && CURRENT_USER.photoURL) ? CURRENT_USER.photoURL : '';
+// FIREBASE: Sign in with Google usinfunction promptProfileSetupModal() {
+  if (!CURRENT_USER) return;
+  const preName = CURRENT_USER.ingameName || CURRENT_USER.name || '';
+  const preInitials = CURRENT_USER.initials || '';
+  const prePhoto = CURRENT_USER.photoURL || '';
+  const preBio = CURRENT_USER.bio || '';
+  const preNickname = CURRENT_USER.nickname || '';
+  const preSpeciality = CURRENT_USER.speciality || '';
+  const preGamemode = CURRENT_USER.favoriteGamemode || '';
 
   const initialsLen = preInitials.length;
   let containerStyle = "width: 80px; height: 80px; font-size: 2rem; border-radius: 50%; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: linear-gradient(135deg, rgba(220, 20, 60, 0.5), rgba(0, 102, 255, 0.5));";
@@ -242,7 +234,7 @@ function promptProfileSetupModal() {
   document.getElementById('modalContent').innerHTML = `
     <h2 class="modal-title">Profile Setup</h2>
     <p class="modal-subtitle">Configure your profile details for the clan system.</p>
-    <form id="profileSetupForm" onsubmit="submitProfileSetup(event)">
+    <form id="profileSetupForm" onsubmit="window.submitProfileSetup(event)">
       <div style="text-align:center; margin-bottom: 20px;">
         <div id="profileSetupPfpContainer" class="author-dot" style="${containerStyle}">
           ${prePhoto ? `<img id="profileSetupPreview" src="${escapeHTML(prePhoto)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />` : `<span id="profileSetupInitialsText">${escapeHTML(preInitials || 'UN')}</span>`}
@@ -260,8 +252,25 @@ function promptProfileSetupModal() {
         Initials (Displayed on Avatar)
         <input type="text" id="profileSetupInitialsInput" placeholder="e.g. TNT" maxlength="10" value="${escapeHTML(preInitials)}" required oninput="window.updateProfileSetupInitialsPreview(this.value)" />
       </label>
+      <label style="margin-top: 12px;">
+        Nickname
+        <input type="text" id="profileNicknameInput" placeholder="Optional nickname" maxlength="32" value="${escapeHTML(preNickname)}" />
+      </label>
+      <label style="margin-top: 12px;">
+        Bio
+        <textarea id="profileBioInput" placeholder="Tell us about yourself..." maxlength="300" oninput="window.updateBioCounter(this)">${escapeHTML(preBio)}</textarea>
+        <div class="char-counter" id="bioCounter" style="text-align: right; font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 4px;">${preBio.length}/300</div>
+      </label>
+      <label style="margin-top: 12px;">
+        Speciality
+        <input type="text" id="profileSpecialityInput" placeholder="Optional" value="${escapeHTML(preSpeciality)}" />
+      </label>
+      <label style="margin-top: 12px;">
+        Favorite Gamemode
+        <input type="text" id="profileGamemodeInput" placeholder="Optional" value="${escapeHTML(preGamemode)}" />
+      </label>
       <div style="display:flex;gap:14px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap;">
-        <button type="button" class="btn-secondary" onclick="closeModal()">CANCEL</button>
+        <button type="button" class="btn-secondary" onclick="window.closeModal()">CANCEL</button>
         <button type="submit" class="btn-primary"><span>SAVE PROFILE</span></button>
       </div>
       <p id="profileSetupError" style="margin-top:14px;color:#ff7b7b;font-size:0.9rem;min-height:20px;"></p>
@@ -276,7 +285,7 @@ function previewProfileSetupPhoto(input) {
     compressImage(file).then(dataUrl => {
       const container = document.getElementById('profileSetupPfpContainer');
       if (container) {
-        container.innerHTML = `<img id="profileSetupPreview" src="${dataUrl}" style="width:100%; height:100%; object-fit:cover; border-radius:50%;" />`;
+        container.innerHTML = `<img id="profileSetupPreview" src="${dataUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />`;
       }
     }).catch(err => {
       console.error("Error compressing pfp:", err);
@@ -308,12 +317,23 @@ function updateProfileSetupInitialsPreview(val) {
   }
 }
 
+function updateBioCounter(textarea) {
+  const counter = document.getElementById('bioCounter');
+  if (counter) {
+    counter.textContent = `${textarea.value.length}/300`;
+  }
+}
+
 async function submitProfileSetup(e) {
   e.preventDefault();
   const nameVal = document.getElementById('profileSetupNameInput').value.trim();
   const initialsVal = document.getElementById('profileSetupInitialsInput').value.toUpperCase().trim();
   const previewImg = document.getElementById('profileSetupPreview');
   const photoVal = previewImg ? previewImg.src : '';
+  const nicknameVal = (document.getElementById('profileNicknameInput')?.value || '').trim();
+  const bioVal = (document.getElementById('profileBioInput')?.value || '').trim();
+  const specialityVal = (document.getElementById('profileSpecialityInput')?.value || '').trim();
+  const gamemodeVal = (document.getElementById('profileGamemodeInput')?.value || '').trim();
   const errEl = document.getElementById('profileSetupError');
 
   if (!nameVal || !initialsVal) {
@@ -328,12 +348,20 @@ async function submitProfileSetup(e) {
   CURRENT_USER.ingameName = nameVal;
   CURRENT_USER.initials = initialsVal;
   CURRENT_USER.photoURL = photoVal;
+  CURRENT_USER.nickname = nicknameVal;
+  CURRENT_USER.bio = bioVal;
+  CURRENT_USER.speciality = specialityVal;
+  CURRENT_USER.favoriteGamemode = gamemodeVal;
 
   try {
     await setDoc(doc(db, 'users', CURRENT_USER.uid), {
       ingameName: nameVal,
       initials: initialsVal,
       photoURL: photoVal,
+      nickname: nicknameVal,
+      bio: bioVal,
+      speciality: specialityVal,
+      favoriteGamemode: gamemodeVal,
       lastActive: serverTimestamp()
     }, { merge: true });
 
@@ -345,7 +373,6 @@ async function submitProfileSetup(e) {
     if (errEl) errEl.textContent = 'Failed to save: ' + err.message;
   }
 }
-
 // FIREBASE: Update visibility of creation buttons based on admin status
 function updateCreationButtonsVisibility() {
   const announceBtn = document.querySelector('button[onclick="openNewAnnouncementModal()"]');
@@ -1670,7 +1697,7 @@ function renderTasks() {
       ? '<span class="task-due-completed">Completed</span>'
       : '<span class="task-due-pending">Due</span>';
     return `
-    <div class="announce-card" onclick="openTaskModal('${t.id}')">
+    <div class="announce-card" onclick="window.openTaskModal('${t.id}')">
       <div class="announce-card-top">
         <span class="announce-tag tag-${t.category}">${t.category.toUpperCase()}</span>
         ${dueDisplay}
@@ -1736,11 +1763,11 @@ function openNewAnnouncementModal() {
       <label style="margin-bottom:14px;">
         Announcement Type
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
-          <button type="button" class="task-type-btn" onclick="selectAnnouncementType('update', this)">UPDATE</button>
-          <button type="button" class="task-type-btn" onclick="selectAnnouncementType('event', this)">EVENT</button>
-          <button type="button" class="task-type-btn" onclick="selectAnnouncementType('alert', this)">ALERT</button>
-          <button type="button" class="task-type-btn" onclick="selectAnnouncementType('recruit', this)">RECRUIT</button>
-          <button type="button" class="task-type-btn" onclick="selectAnnouncementType('decree', this)">DECREE</button>
+          <button type="button" class="task-type-btn" onclick="window.selectAnnouncementType('update', this)">UPDATE</button>
+          <button type="button" class="task-type-btn" onclick="window.selectAnnouncementType('event', this)">EVENT</button>
+          <button type="button" class="task-type-btn" onclick="window.selectAnnouncementType('alert', this)">ALERT</button>
+          <button type="button" class="task-type-btn" onclick="window.selectAnnouncementType('recruit', this)">RECRUIT</button>
+          <button type="button" class="task-type-btn" onclick="window.selectAnnouncementType('decree', this)">DECREE</button>
         </div>
         <input type="hidden" id="announceCategory" required />
       </label>
@@ -1831,11 +1858,11 @@ function openAssignTaskModal() {
       <label style="margin-bottom:14px;">
         Task Type
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
-          <button type="button" class="task-type-btn" data-type="building" onclick="selectTaskType('building', this)">BUILDING</button>
-          <button type="button" class="task-type-btn" data-type="grinding" onclick="selectTaskType('grinding', this)">GRINDING</button>
-          <button type="button" class="task-type-btn" data-type="fighting" onclick="selectTaskType('fighting', this)">FIGHTING</button>
-          <button type="button" class="task-type-btn" data-type="support" onclick="selectTaskType('support', this)">SUPPORT</button>
-          <button type="button" class="task-type-btn" data-type="defense" onclick="selectTaskType('defense', this)">DEFENSE</button>
+          <button type="button" class="task-type-btn" data-type="building" onclick="window.selectTaskType('building', this)">BUILDING</button>
+          <button type="button" class="task-type-btn" data-type="grinding" onclick="window.selectTaskType('grinding', this)">GRINDING</button>
+          <button type="button" class="task-type-btn" data-type="fighting" onclick="window.selectTaskType('fighting', this)">FIGHTING</button>
+          <button type="button" class="task-type-btn" data-type="support" onclick="window.selectTaskType('support', this)">SUPPORT</button>
+          <button type="button" class="task-type-btn" data-type="defense" onclick="window.selectTaskType('defense', this)">DEFENSE</button>
         </div>
         <input type="hidden" id="assignTaskCategory" required />
       </label>
@@ -1931,14 +1958,14 @@ function openTaskModal(id) {
       ` : ''}
       ${isAdmin() ? `
         <button type="button" class="btn-primary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; background: linear-gradient(135deg, #ff007b, #9d00ff); border: none;" onclick="window.open('https://docs.google.com/spreadsheets/d/1_Ne9NHpq5UxfcFw6B-wL4y042xVD56c9HhVnmPMGXUg/edit?usp=sharing', '_blank')">View Completion proof</button>
-        <button type="button" class="btn-secondary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em;" onclick="openEditTaskModal('${t.id}')">EDIT</button>
-        <button type="button" class="task-action-btn task-delete-btn" onclick="requestDeleteTask('${t.id}')">✕</button>
-        ${!t.completed ? `<button type="button" class="task-action-btn task-complete-btn" onclick="requestCompleteTask('${t.id}')">✓</button>` : ''}
+        <button type="button" class="btn-secondary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em;" onclick="window.openEditTaskModal('${t.id}')">EDIT</button>
+        <button type="button" class="task-action-btn task-delete-btn" onclick="window.requestDeleteTask('${t.id}')">✕</button>
+        ${!t.completed ? `<button type="button" class="task-action-btn task-complete-btn" onclick="window.requestCompleteTask('${t.id}')">✓</button>` : ''}
       ` : ''}
       ${!t.completed ? `
         <button type="button" class="btn-primary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em;" onclick="window.openSubmitProofModal('${t.id}')">TASK COMPLETED</button>
       ` : ''}
-      <button type="button" class="btn-secondary" onclick="closeModal()">CLOSE</button>
+      <button type="button" class="btn-secondary" onclick="window.closeModal()">CLOSE</button>
     </div>
   `;
   openModal();
@@ -1976,7 +2003,7 @@ function requestDeleteTask(id) {
       <h2 class="modal-title">Admin Only</h2>
       <p class="modal-subtitle">Only admins can delete tasks.</p>
       <div style="display:flex;gap:14px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px;">
-        <button type="button" class="btn-secondary" onclick="openTaskModal('${id}')">BACK</button>
+        <button type="button" class="btn-secondary" onclick="window.openTaskModal('${id}')">BACK</button>
       </div>
     `;
     return;
@@ -1985,8 +2012,8 @@ function requestDeleteTask(id) {
     <h2 class="modal-title">Confirm Deletion</h2>
     <p class="modal-subtitle" style="margin-bottom:18px;">Are you sure you want to delete this task?</p>
     <div style="display:flex;gap:14px;justify-content:flex-end;flex-wrap:wrap;">
-      <button type="button" class="btn-secondary" onclick="openTaskModal('${id}')">CANCEL</button>
-      <button type="button" class="btn-primary" onclick="confirmDeleteTask('${id}')"><span>DELETE</span></button>
+      <button type="button" class="btn-secondary" onclick="window.openTaskModal('${id}')">CANCEL</button>
+      <button type="button" class="btn-primary" onclick="window.confirmDeleteTask('${id}')"><span>DELETE</span></button>
     </div>
     <p id="deleteError" style="margin-top:14px;color:#ff7b7b;font-size:0.9rem;min-height:20px;"></p>
   `;
@@ -2018,7 +2045,7 @@ function requestCompleteTask(id) {
       <h2 class="modal-title">Admin Only</h2>
       <p class="modal-subtitle">Only admins can mark tasks complete.</p>
       <div style="display:flex;gap:14px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px;">
-        <button type="button" class="btn-secondary" onclick="openTaskModal('${id}')">BACK</button>
+        <button type="button" class="btn-secondary" onclick="window.openTaskModal('${id}')">BACK</button>
       </div>
     `;
     return;
@@ -2027,8 +2054,8 @@ function requestCompleteTask(id) {
     <h2 class="modal-title">Mark as Complete</h2>
     <p class="modal-subtitle" style="margin-bottom:18px;">Are you sure you want to mark this task as complete?</p>
     <div style="display:flex;gap:14px;justify-content:flex-end;flex-wrap:wrap;">
-      <button type="button" class="btn-secondary" onclick="openTaskModal('${id}')">CANCEL</button>
-      <button type="button" class="btn-primary" onclick="confirmCompleteTask('${id}')"><span>COMPLETE</span></button>
+      <button type="button" class="btn-secondary" onclick="window.openTaskModal('${id}')">CANCEL</button>
+      <button type="button" class="btn-primary" onclick="window.confirmCompleteTask('${id}')"><span>COMPLETE</span></button>
     </div>
     <p id="completeError" style="margin-top:14px;color:#ff7b7b;font-size:0.9rem;min-height:20px;"></p>
   `;
@@ -2090,7 +2117,7 @@ function openEditTaskModal(id) {
               </div>
             </label>
             <div style="display:flex;gap:14px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap;">
-              <button type="button" class="btn-secondary" onclick="openTaskModal('${t.id}')">CANCEL</button>
+              <button type="button" class="btn-secondary" onclick="window.openTaskModal('${t.id}')">CANCEL</button>
               <button type="submit" class="btn-primary"><span>SAVE CHANGES</span></button>
             </div>
             <p id="taskEditFormError" style="margin-top:14px;color:#ff7b7b;font-size:0.9rem;min-height:20px;"></p>
@@ -2954,6 +2981,7 @@ window.goPage = goPage;
 window.promptProfileSetupModal = promptProfileSetupModal;
 window.previewProfileSetupPhoto = previewProfileSetupPhoto;
 window.updateProfileSetupInitialsPreview = updateProfileSetupInitialsPreview;
+window.updateBioCounter = updateBioCounter;
 window.submitProfileSetup = submitProfileSetup;
 window.submitAnnouncementForm = submitAnnouncementForm;
 window.submitTaskForm = submitTaskForm;

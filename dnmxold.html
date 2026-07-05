@@ -3110,6 +3110,7 @@
     // ═════════════════════════════════════=
     const ADMIN_EMAILS = [
       "revivaltechfixes@gmail.com",
+      "noah.dnmx@gmail.com",
       "tntplayertnt8@gmail.com",
       "drglass09yt@gmail.com",
       "cyberelite5253@gmail.com",
@@ -3119,7 +3120,7 @@
     ];
 
     function isAdmin() {
-      return CURRENT_USER && ADMIN_EMAILS.includes(CURRENT_USER.email.trim());
+      return CURRENT_USER && ADMIN_EMAILS.includes(CURRENT_USER.email.trim().toLowerCase());
     }
 
     // ═════════════════════════════════════=
