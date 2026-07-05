@@ -44,6 +44,15 @@ function isAdmin() {
 let CURRENT_USER = null;
 let ANNOUNCEMENTS = [];
 let TASKS = [];
+let isAuthInitialized = false;
+let isTimerFinished = false;
+
+function tryHideLoader() {
+  if (isAuthInitialized && isTimerFinished) {
+    const loader = document.getElementById('loader');
+    if (loader) loader.classList.add('hide');
+  }
+}
 
 // ═════════════════════════════════════=
 //  MEMBER CHAT SYSTEM VARIABLES
@@ -138,6 +147,8 @@ onAuthStateChanged(auth, async (user) => {
   }
   updateAuthUI();
   updateCreationButtonsVisibility();
+  isAuthInitialized = true;
+  tryHideLoader();
 });
 
 function updateAuthUI() {
@@ -3004,10 +3015,16 @@ window.addEventListener('load', () => {
   if (document.getElementById('memoriesGrid')) setupMemoriesListener();
 
   setTimeout(() => {
-    const loader = document.getElementById('loader');
-    if (loader) loader.classList.add('hide');
+    isTimerFinished = true;
+    tryHideLoader();
     spawnParticles();
     animateCounters();
     setupDragAndDropListeners();
   }, 2000);
+
+  // Fallback to force hide loader if auth initialization takes too long (e.g. offline/error)
+  setTimeout(() => {
+    isAuthInitialized = true;
+    tryHideLoader();
+  }, 5000);
 });
