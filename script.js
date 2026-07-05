@@ -213,8 +213,28 @@ function openLoginModal() {
   `;
   openModal();
 }
+// FIREBASE: Sign in with Google using FirebaseAuth
+function signInWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  signInWithPopup(auth, provider)
+    .then((result) => {
+      closeModal();
+      setTimeout(() => {
+        promptProfileSetupModal();
+      }, 250);
+    })
+    .catch((error) => {
+      document.getElementById('gsiStatus').textContent = 'Sign-in failed: ' + error.message;
+    });
+}
 
-// FIREBASE: Sign in with Google usinfunction promptProfileSetupModal() {
+// FIREBASE: Sign out
+function signOutUser() {
+  firebaseSignOut(auth).catch(err => console.error('Sign-out error:', err));
+}
+
+// Prompt user to complete profile setup
+function promptProfileSetupModal() {
   if (!CURRENT_USER) return;
   const preName = CURRENT_USER.ingameName || CURRENT_USER.name || '';
   const preInitials = CURRENT_USER.initials || '';
