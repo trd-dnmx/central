@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>
+    Dnmx — Clan Headquarters
+  </title>
+  <link rel="icon" type="image/png" href="assets/Dnmx.png" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&amp;family=Rajdhani:wght@300;400;500;600;700&amp;family=Orbitron:wght@400;500;600;700;800;900&amp;display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- LOADING SCREEN -->
+  <div id="loader">
+    <div class="loader-logo">
+      DNMX
+    </div>
+    <div class="loader-bar-wrap">
+      <div class="loader-bar">
+      </div>
+    </div>
+    <div class="loader-text">
+      INITIALIZING COMMAND CENTER
+    </div>
+  </div>
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo" onclick="navigate('home')">
+      DNMX
+    </div>
+    <ul class="nav-links">
+      <li>
+        <a href="#" class="nav-link active" data-page="home"> HOME
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="hierarchy"> HIERARCHY
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="rules"> RULES
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="councils"> COUNCILS
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="tasks"> TASKS
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="announcements"> ANNOUNCEMENTS
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="memories"> MEMORIES
+        </a>
+      </li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn-secondary" id="chatToggleButton" onclick="window.toggleChatPanel()" style="display: none;">
+        CHAT
+      </button>
+      <div id="authArea">
+        <button class="btn-secondary" id="authButton" onclick="openLoginModal()">
+          LOG IN
+        </button>
+      </div>
+      <div class="hamburger" id="hamburger" onclick="toggleMobile()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#" class="mobile-nav-link active" data-page="home"> HOME
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="hierarchy"> HIERARCHY
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="rules"> RULES
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="councils"> COUNCILS
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="tasks"> TASKS
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="announcements"> ANNOUNCEMENTS
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="memories"> MEMORIES
+    </a>
+    <div id="mobileAuthArea"
+      style="margin-top: 10px; padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px;">
+    </div>
+  </div>
+  <main>
+    <section id="home-page" class="page active">
+
+      <!-- Hero -->
+      <div class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-grid"></div>
+        <div class="hero-particles" id="particles"></div>
+        <div class="hero-content">
+          <p class="hero-eyebrow">★ CLAN OF JUSTICE ★</p>
+          <h1 class="hero-title">DNMX</h1>
+          <p class="hero-subtitle">Command &nbsp;·&nbsp; Conquer &nbsp;·&nbsp; Dominate</p>
+          <div class="hero-divider"></div>
+          <p class="hero-desc">
+            A sovereign clan forged in discipline and ambition. DNMX stands as the supreme command center where strategy
+            meets legacy — where the strongest rise and the worthy are crowned.
+          </p>
+          <div class="hero-ctas">
+            <button class="btn-primary" onclick="navigate('hierarchy')"><span>VIEW HIERARCHY</span></button>
+            <button class="btn-secondary" onclick="navigate('councils')">MEET THE COUNCILS</button>
+          </div>
+        </div>
+        <div class="scroll-indicator">
+          <div class="scroll-mouse"></div>
+          <span>SCROLL</span>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-number" data-count="2022">0</div>
+            <div class="stat-label">Established In</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" data-count="93">0</div>
+            <div class="stat-label">Members</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number" data-count="17">0</div>
+            <div class="stat-label">Rank Tiers</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Principles -->
+      <div class="principles-section">
+        <div class="section-header">
+          <p class="section-eyebrow">Our Foundation</p>
+          <h2 class="section-title">Core Principles</h2>
+          <div class="section-line"></div>
+        </div>
+        <div class="principles-grid">
+          <div class="principle-card">
+            <span class="principle-num">01</span>
+            <span class="principle-icon">⚔️</span>
+            <h3 class="principle-name">Sovereignty</h3>
+            <p class="principle-desc">DNMX operates as an independent clan with its own laws, hierarchy, and code of
+              conduct. Every member is a citizen bound by the sacred decree.</p>
+          </div>
+          <div class="principle-card">
+            <span class="principle-num">02</span>
+            <span class="principle-icon">🛡️</span>
+            <h3 class="principle-name">Discipline</h3>
+            <p class="principle-desc">Order and structure are the pillars of power. Every rank earned demands adherence
+              to the clan's values — no exceptions, no compromise.</p>
+          </div>
+          <div class="principle-card">
+            <span class="principle-num">03</span>
+            <span class="principle-icon">👑</span>
+            <h3 class="principle-name">Meritocracy</h3>
+            <p class="principle-desc">Advancement is earned through skill, dedication, and service. DNMX recognizes
+              excellence and rewards those who prove their worth on the battlefield.</p>
+          </div>
+          <div class="principle-card">
+            <span class="principle-num">04</span>
+            <span class="principle-icon">🔥</span>
+            <h3 class="principle-name">Dominance</h3>
+            <p class="principle-desc">We do not merely compete — we conquer. DNMX was built to dominate every arena it
+              enters, setting the standard all others measure themselves against.</p>
+          </div>
+          <div class="principle-card">
+            <span class="principle-num">05</span>
+            <span class="principle-icon">🤝</span>
+            <h3 class="principle-name">Brotherhood</h3>
+            <p class="principle-desc">Beyond competition lies loyalty. The bonds forged within DNMX transcend games — we
+              are a family, a force, a legacy written together.</p>
+          </div>
+          <div class="principle-card">
+            <span class="principle-num">06</span>
+            <span class="principle-icon">⚡</span>
+            <h3 class="principle-name">Evolution</h3>
+            <p class="principle-desc">DNMX never stagnates. We adapt, improve, and grow — our clan evolves with every
+              era, ensuring permanent relevance and eternal strength.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Why Join -->
+      <div class="why-section">
+        <div class="why-inner">
+          <div class="why-text">
+            <h2>Why the Best Choose DNMX</h2>
+            <p>In a world of countless clans and factions, DNMX stands apart. We are not a group — we are a sovereign
+              clan with structure, purpose, and a legacy of excellence.</p>
+            <p>When you join DNMX, you don't just gain a tag. You earn a rank, a brotherhood, and the right to bear the
+              mark of the clan's finest.</p>
+            <div class="why-ctas">
+              <button class="btn-primary" onclick="navigate('hierarchy')"><span>VIEW RANKS</span></button>
+              <button class="btn-secondary" onclick="navigate('announcements')">LATEST NEWS</button>
+            </div>
+          </div>
+          <ul class="why-list">
+            <li class="why-item">
+              <span class="why-item-icon">🗺️</span>
+              <div class="why-item-text">
+                <h4>Structured Hierarchy</h4>
+                <p>A clear path from recruit to executive — every rank has purpose and power.</p>
+              </div>
+            </li>
+            <li class="why-item">
+              <span class="why-item-icon">🎖️</span>
+              <div class="why-item-text">
+                <h4>Elite Councils</h4>
+                <p>Two governing councils oversee the clan's direction and member welfare.</p>
+              </div>
+            </li>
+            <li class="why-item">
+              <span class="why-item-icon">📣</span>
+              <div class="why-item-text">
+                <h4>Regular Decrees</h4>
+                <p>Stay informed with official announcements, events, and clan updates.</p>
+              </div>
+            </li>
+            <li class="why-item">
+              <span class="why-item-icon">🏆</span>
+              <div class="why-item-text">
+                <h4>Proven Legacy</h4>
+                <p>DNMX has a storied history of dominance that new members inherit.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <footer>
+        <div class="footer-logo">DNMX</div>
+        <p>© 2026 DNMX Clan Headquarters — All rights reserved.</p>
+      </footer>
+
+      <!-- CHAT PANEL -->
+      <div id="chatPanel" class="chat-panel">
+        <!-- User List View -->
+        <div id="chatUserListContainer" class="chat-view-container">
+          <div class="chat-header">
+            <h3 class="chat-title">
+              MEMBERS CHAT
+            </h3>
+            <button class="chat-close-btn" onclick="window.toggleChatPanel()">
+              ✕
+            </button>
+          </div>
+          <div class="chat-user-list" id="chatUserList">
+            <!-- Users populated dynamically -->
+          </div>
+        </div>
+        <!-- Chat Room View -->
+        <div id="chatRoomContainer" class="chat-view-container" style="display: none;">
+          <div class="chat-header">
+            <button class="chat-back-btn" onclick="window.goBackToUserList()">
+              ←
+            </button>
+            <div class="chat-header-info">
+              <h4 id="chatRoomHeaderName" class="chat-active-username">
+                Username
+              </h4>
+              <div id="chatRoomHeaderStatus" class="chat-active-status">
+                Online
+              </div>
+            </div>
+            <button class="chat-close-btn" onclick="window.toggleChatPanel()">
+              ✕
+            </button>
+          </div>
+          <div class="chat-messages" id="chatMessagesBody">
+            <!-- Messages populated dynamically -->
+          </div>
+          <div id="chatTypingIndicator" class="chat-typing-indicator" style="display: none;">
+            <span id="chatTypingText"></span>
+            <div class="typing-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+          <div id="chatMediaPreview" class="chat-media-preview" style="display: none;">
+            <img id="chatMediaPreviewImg" src="" />
+            <button class="remove-preview-btn" onclick="window.removeChatMedia()">
+              ✕
+            </button>
+          </div>
+          <div class="chat-input-area">
+            <textarea id="chatMessageInput" placeholder="Write a message..." rows="1"
+              onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); window.sendChatMessage(); }"
+              oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; window.handleTypingInput();">
+            </textarea>
+            <button class="btn-primary chat-send-btn" onclick="window.sendChatMessage()">
+              <span> SEND
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- MODAL -->
+      <div class="modal-overlay" id="modal" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+          <button class="modal-close" onclick="closeModal()">
+            ✕
+          </button>
+          <div id="modalContent">
+          </div>
+        </div>
+      </div>
+
+  </main>
+  <!-- FIREBASE -->
+  <script type="module" src="script.js"></script>
+</body>
+
+</html>

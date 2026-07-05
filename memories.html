@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>
+    Dnmx — Clan Headquarters
+  </title>
+  <link rel="icon" type="image/png" href="assets/Dnmx.png" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&amp;family=Rajdhani:wght@300;400;500;600;700&amp;family=Orbitron:wght@400;500;600;700;800;900&amp;display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <!-- LOADING SCREEN -->
+  <div id="loader">
+    <div class="loader-logo">
+      DNMX
+    </div>
+    <div class="loader-bar-wrap">
+      <div class="loader-bar">
+      </div>
+    </div>
+    <div class="loader-text">
+      INITIALIZING COMMAND CENTER
+    </div>
+  </div>
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo" onclick="navigate('home')">
+      DNMX
+    </div>
+    <ul class="nav-links">
+      <li>
+        <a href="#" class="nav-link" data-page="home"> HOME
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="hierarchy"> HIERARCHY
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="rules"> RULES
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="councils"> COUNCILS
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="tasks"> TASKS
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link" data-page="announcements"> ANNOUNCEMENTS
+        </a>
+      </li>
+      <li>
+        <a href="#" class="nav-link active" data-page="memories"> MEMORIES
+        </a>
+      </li>
+    </ul>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn-secondary" id="chatToggleButton" onclick="window.toggleChatPanel()" style="display: none;">
+        CHAT
+      </button>
+      <div id="authArea">
+        <button class="btn-secondary" id="authButton" onclick="openLoginModal()">
+          LOG IN
+        </button>
+      </div>
+      <div class="hamburger" id="hamburger" onclick="toggleMobile()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#" class="mobile-nav-link" data-page="home"> HOME
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="hierarchy"> HIERARCHY
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="rules"> RULES
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="councils"> COUNCILS
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="tasks"> TASKS
+    </a>
+    <a href="#" class="mobile-nav-link" data-page="announcements"> ANNOUNCEMENTS
+    </a>
+    <a href="#" class="mobile-nav-link active" data-page="memories"> MEMORIES
+    </a>
+    <div id="mobileAuthArea"
+      style="margin-top: 10px; padding: 10px 20px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; gap: 10px;">
+    </div>
+  </div>
+  <main>
+    <section id="memories-page" class="page active">
+      <div class="page-hero">
+        <div class="page-hero-bg">
+        </div>
+        <div class="page-hero-grid">
+        </div>
+        <div class="page-hero-content">
+          <span class="page-hero-tag"> ★ MEMORIES &amp; LOGS ★
+          </span>
+          <h1 class="page-hero-title">
+            CLAN ARCHIVES
+          </h1>
+          <p class="page-hero-subtitle">
+            Legacy of Dnmx
+          </p>
+        </div>
+      </div>
+      <div class="principles-section" style="padding-top:20px;">
+
+        <!-- Images Archive Sub Section -->
+        <div id="subSectionImages" class="memories-sub-section">
+          <div class="announce-controls" style="margin-bottom: 30px;">
+            <div class="search-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="memorySearch" placeholder="Search images by name..."
+                oninput="window.filterMemories()" />
+            </div>
+          </div>
+          <div class="memories-grid" id="memoriesGrid">
+            <!-- Images populated dynamically -->
+          </div>
+          <button type="button" class="btn-primary floating-upload-btn" id="uploadImageTrigger"
+            onclick="window.openUploadImageModal()" style="display:none;"><span>UPLOAD IMAGE</span></button>
+        </div>
+
+      </div>
+
+      <!-- CHAT PANEL -->
+      <div id="chatPanel" class="chat-panel">
+        <!-- User List View -->
+        <div id="chatUserListContainer" class="chat-view-container">
+          <div class="chat-header">
+            <h3 class="chat-title">
+              MEMBERS CHAT
+            </h3>
+            <button class="chat-close-btn" onclick="window.toggleChatPanel()">
+              ✕
+            </button>
+          </div>
+          <div class="chat-user-list" id="chatUserList">
+            <!-- Users populated dynamically -->
+          </div>
+        </div>
+        <!-- Chat Room View -->
+        <div id="chatRoomContainer" class="chat-view-container" style="display: none;">
+          <div class="chat-header">
+            <button class="chat-back-btn" onclick="window.goBackToUserList()">
+              ←
+            </button>
+            <div class="chat-header-info">
+              <h4 id="chatRoomHeaderName" class="chat-active-username">
+                Username
+              </h4>
+              <div id="chatRoomHeaderStatus" class="chat-active-status">
+                Online
+              </div>
+            </div>
+            <button class="chat-close-btn" onclick="window.toggleChatPanel()">
+              ✕
+            </button>
+          </div>
+          <div class="chat-messages" id="chatMessagesBody">
+            <!-- Messages populated dynamically -->
+          </div>
+          <div id="chatTypingIndicator" class="chat-typing-indicator" style="display: none;">
+            <span id="chatTypingText"></span>
+            <div class="typing-dots">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+          <div id="chatMediaPreview" class="chat-media-preview" style="display: none;">
+            <img id="chatMediaPreviewImg" src="" />
+            <button class="remove-preview-btn" onclick="window.removeChatMedia()">
+              ✕
+            </button>
+          </div>
+          <div class="chat-input-area">
+            <textarea id="chatMessageInput" placeholder="Write a message..." rows="1"
+              onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); window.sendChatMessage(); }"
+              oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; window.handleTypingInput();">
+            </textarea>
+            <button class="btn-primary chat-send-btn" onclick="window.sendChatMessage()">
+              <span> SEND
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- MODAL -->
+      <div class="modal-overlay" id="modal" onclick="closeModalOnOverlay(event)">
+        <div class="modal">
+          <button class="modal-close" onclick="closeModal()">
+            ✕
+          </button>
+          <div id="modalContent">
+          </div>
+        </div>
+      </div>
+
+  </main>
+  <!-- FIREBASE -->
+  <script type="module" src="script.js"></script>
+</body>
+
+</html>
