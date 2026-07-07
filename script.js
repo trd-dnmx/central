@@ -200,38 +200,93 @@ function updateAuthUI() {
   }
 }
 
+// ═════════════════════════════════════=
+//  TOAST NOTIFICATION SYSTEM
+// ═════════════════════════════════════=
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  // Trigger slide-in
+  requestAnimationFrame(() => {
+    toast.classList.add('show');
+  });
+
+  // Auto dismiss after 4s
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 4000);
+}
+window.showToast = showToast;
+
 // FIREBASE: Sign in with Google
 function openLoginModal() {
   document.getElementById('modalContent').innerHTML = `
     <h2 class="modal-title">Sign in with Google</h2>
-    <p class="modal-subtitle">Sign in via Google to access admin features.</p>
+    <p class="modal-subtitle">CLAN HEADQUARTERS</p>
+    <p class="modal-text" style="margin-bottom: 20px;">Sign in to access chat, upload memories, and customize your profile.</p>
     <div id="gsiStatus" style="margin-top:12px;color:rgba(255,255,255,0.7)"></div>
-    <div style="display:flex;gap:14px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap;">
-      <button type="button" class="btn-secondary" onclick="closeModal()">CANCEL</button>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" onclick="window.closeModal()">CANCEL</button>
       <button type="button" class="btn-primary" onclick="window.signInWithGoogle()"><span>SIGN IN WITH GOOGLE</span></button>
     </div>
   `;
   openModal();
 }
+window.openLoginModal = openLoginModal;
+
 // FIREBASE: Sign in with Google using FirebaseAuth
 function signInWithGoogle() {
   const provider = new GoogleAuthProvider();
   signInWithPopup(auth, provider)
     .then((result) => {
       closeModal();
+      showToast('Signed in successfully.', 'success');
       setTimeout(() => {
         promptProfileSetupModal();
       }, 250);
     })
     .catch((error) => {
-      document.getElementById('gsiStatus').textContent = 'Sign-in failed: ' + error.message;
+      const status = document.getElementById('gsiStatus');
+      if (status) status.textContent = 'Sign-in failed: ' + error.message;
+      showToast('Unable to sign in. Please try again.', 'error');
     });
 }
+window.signInWithGoogle = signInWithGoogle;
 
 // FIREBASE: Sign out
 function signOutUser() {
-  firebaseSignOut(auth).catch(err => console.error('Sign-out error:', err));
+  // Show confirmation
+  document.getElementById('modalContent').innerHTML = `
+    <h2 class="modal-title">Log Out</h2>
+    <p class="modal-text">Log out of DNMX Clan Headquarters?</p>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="window.closeModal()">CANCEL</button>
+      <button class="btn-primary" onclick="window.confirmSignOut()"><span>LOG OUT</span></button>
+    </div>
+  `;
+  openModal();
 }
+window.signOutUser = signOutUser;
+
+function confirmSignOut() {
+  firebaseSignOut(auth)
+    .then(() => {
+      closeModal();
+      showToast('Signed out.', 'info');
+    })
+    .catch(err => {
+      console.error('Sign-out error:', err);
+      showToast('Error signing out.', 'error');
+    });
+}
+window.confirmSignOut = confirmSignOut;
 
 // Prompt user to complete profile setup
 function promptProfileSetupModal() {
