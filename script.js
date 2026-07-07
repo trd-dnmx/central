@@ -30,11 +30,17 @@ const ADMIN_EMAILS = [
   "cyberelite5253@gmail.com",
   "budavasile6211@gmail.com",
   "tk.dnmx@gmail.com",
-  "chickendajaja@gmail.com",
+  "chickendajaja@gmail.com"
 ];
 
 function isAdmin() {
-  return CURRENT_USER && ADMIN_EMAILS.includes(CURRENT_USER.email.trim().toLowerCase());
+  if (!CURRENT_USER) return false;
+  const userEmail = CURRENT_USER.email.trim().toLowerCase();
+  const match = ADMIN_EMAILS.some(e => e.trim().toLowerCase() === userEmail) || CURRENT_USER.isAdmin === true;
+  if (!match) {
+    console.warn('[isAdmin] Signed-in email is not in admin list:', userEmail);
+  }
+  return match;
 }
 
 // ═════════════════════════════════════=
@@ -95,6 +101,7 @@ onAuthStateChanged(auth, async (user) => {
         CURRENT_USER.nickname = userData.nickname || '';
         CURRENT_USER.speciality = userData.speciality || '';
         CURRENT_USER.favoriteGamemode = userData.favoriteGamemode || '';
+        CURRENT_USER.isAdmin = userData.isAdmin || ADMIN_EMAILS.some(e => e.trim().toLowerCase() === user.email.trim().toLowerCase());
 
         if (!userData.ingameName || !userData.initials || !userData.photoURL) {
           needsSetup = true;
@@ -104,10 +111,12 @@ onAuthStateChanged(auth, async (user) => {
         await updateDoc(userDocRef, {
           lastActive: serverTimestamp(),
           photoURL: CURRENT_USER.photoURL,
-          initials: CURRENT_USER.initials
+          initials: CURRENT_USER.initials,
+          isAdmin: CURRENT_USER.isAdmin
         });
       } else {
         needsSetup = true;
+        CURRENT_USER.isAdmin = ADMIN_EMAILS.some(e => e.trim().toLowerCase() === user.email.trim().toLowerCase());
         // Register user profile
         await setDoc(userDocRef, {
           uid: user.uid,
@@ -120,6 +129,7 @@ onAuthStateChanged(auth, async (user) => {
           nickname: '',
           speciality: '',
           favoriteGamemode: '',
+          isAdmin: CURRENT_USER.isAdmin,
           lastActive: serverTimestamp()
         });
       }
@@ -450,17 +460,20 @@ async function submitProfileSetup(e) {
 }
 // FIREBASE: Update visibility of creation buttons based on admin status
 function updateCreationButtonsVisibility() {
-  const announceBtn = document.querySelector('button[onclick="openNewAnnouncementModal()"]');
-  const taskBtn = document.querySelector('button[onclick="openAssignTaskModal()"]');
+  // Use stable IDs (set on the buttons in each HTML page)
+  const announceBtn = document.getElementById('adminAnnounceBtn');
+  const taskBtn = document.getElementById('adminTaskBtn');
   const adminTriggers = [announceBtn, taskBtn];
   const visible = isAdmin();
 
   adminTriggers.forEach((el) => {
     if (!el) return;
-    el.style.display = visible ? '' : 'none';
+    // Use 'flex' or 'inline-block' explicitly when showing — avoid empty string
+    // which can behave inconsistently depending on the element's CSS context.
+    el.style.display = visible ? 'inline-block' : 'none';
     el.disabled = !visible;
-    el.style.opacity = visible ? '1' : '0.5';
-    el.title = visible ? '' : 'Admin only';
+    el.style.opacity = '1';
+    el.title = '';
   });
 }
 
@@ -1720,13 +1733,15 @@ function renderAnnouncements() {
 
   // Pagination
   const pag = document.getElementById('pagination');
-  if (totalPages <= 1) { pag.innerHTML = ''; return; }
-  let pagHTML = `<button class="page-btn arrow" onclick="goPage(${announcePage - 1})" ${announcePage === 1 ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''}>‹</button>`;
-  for (let i = 1; i <= totalPages; i++) {
-    pagHTML += `<button class="page-btn ${i === announcePage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  if (pag) {
+    if (totalPages <= 1) { pag.innerHTML = ''; return; }
+    let pagHTML = `<button class="page-btn arrow" onclick="goPage(${announcePage - 1})" ${announcePage === 1 ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''}>‹</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+      pagHTML += `<button class="page-btn ${i === announcePage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+    }
+    pagHTML += `<button class="page-btn arrow" onclick="goPage(${announcePage + 1})" ${announcePage === totalPages ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''}>›</button>`;
+    pag.innerHTML = pagHTML;
   }
-  pagHTML += `<button class="page-btn arrow" onclick="goPage(${announcePage + 1})" ${announcePage === totalPages ? 'disabled style="opacity:0.3;cursor:not-allowed"' : ''}>›</button>`;
-  pag.innerHTML = pagHTML;
 }
 
 function goPage(p) {
@@ -2011,6 +2026,7 @@ async function submitTaskForm(event) {
 function openTaskModal(id) {
   const t = TASKS.find(x => x.id === id);
   if (!t) return;
+  const admin = isAdmin();
   const dueDisplay = t.completed
     ? '<span class="task-due-completed">Completed</span>'
     : '<span class="task-due-pending">Due</span>';
@@ -2033,8 +2049,9 @@ function openTaskModal(id) {
       ${t.imageUrl ? `
         <button type="button" class="btn-primary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em;" onclick="window.openMediaFullModal('${t.imageUrl}', 'image', '${escapeHTML(t.title)}')">VIEW TASK MEDIA</button>
       ` : ''}
-      ${isAdmin() ? `
-        <button type="button" class="btn-primary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; background: linear-gradient(135deg, #ff007b, #9d00ff); border: none;" onclick="window.open('https://docs.google.com/spreadsheets/d/1_Ne9NHpq5UxfcFw6B-wL4y042xVD56c9HhVnmPMGXUg/edit?usp=sharing', '_blank')">View Completion proof</button>
+      ${admin ? `
+        <button type="button" class="btn-primary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; background: linear-gradient(135deg, #ff007b, #9d00ff); border: none;" onclick="window.open('https://docs.google.com/spreadsheets/d/1_Ne9NHpq5UxfcFw6B-wL4y042xVD56c9HhVnmPMGXUg/edit?usp=sharing', '_blank')">VIEW PROOF SHEET</button>
+        <button type="button" class="btn-primary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; background: linear-gradient(135deg, #00b0ff, #00e676); border: none;" onclick="window.openTaskProofsListModal('${t.id}')">VIEW PROOFS</button>
         <button type="button" class="btn-secondary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em;" onclick="window.openEditTaskModal('${t.id}')">EDIT</button>
         <button type="button" class="task-action-btn task-delete-btn" onclick="window.requestDeleteTask('${t.id}')">✕</button>
         ${!t.completed ? `<button type="button" class="task-action-btn task-complete-btn" onclick="window.requestCompleteTask('${t.id}')">✓</button>` : ''}
@@ -2047,31 +2064,33 @@ function openTaskModal(id) {
   `;
   openModal();
 
-  if (t.completed) {
-    const proofsRef = collection(db, 'logs');
-    const q = query(proofsRef, where('taskTitle', '==', t.title));
-    getDocs(q).then((snapshot) => {
-      if (!snapshot.empty) {
-        // Find the most recent proof by sorting client-side
-        const sortedDocs = snapshot.docs.map(d => ({ id: d.id, ...d.data() })).sort((a, b) => {
-          const aTime = a.submittedAt && typeof a.submittedAt.toDate === 'function' ? a.submittedAt.toDate() : (a.submittedAt instanceof Date ? a.submittedAt : (a.timestamp && typeof a.timestamp.toDate === 'function' ? a.timestamp.toDate() : new Date(0)));
-          const bTime = b.submittedAt && typeof b.submittedAt.toDate === 'function' ? b.submittedAt.toDate() : (b.submittedAt instanceof Date ? b.submittedAt : (b.timestamp && typeof b.timestamp.toDate === 'function' ? b.timestamp.toDate() : new Date(0)));
-          return bTime - aTime;
-        });
-        const proofData = sortedDocs[0];
-        const proofFile = proofData.proofFile || proofData.media;
-        if (proofFile) {
-          const btnContainer = document.getElementById('taskProofMediaBtnContainer');
-          if (btnContainer) {
-            const escMsg = (proofData.message || '').replace(/'/g, "\\'");
-            btnContainer.innerHTML = `
-                  <button type="button" class="btn-primary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; background: linear-gradient(135deg, #00e676, #00b0ff); margin-right: 12px;" onclick="window.openMediaFullModal('${proofFile}', '${proofData.fileType || 'image'}', 'Proof: ${escapeHTML(t.title)}', '${escMsg}')">VIEW MEDIA</button>
-                `;
-          }
-        }
-      }
-    }).catch(err => console.error("Error querying task proof:", err));
-  }
+  // Load submitted proof media button (query by taskId for accuracy, fallback to taskTitle)
+  const proofsRef = collection(db, 'logs');
+  const showProofBtn = (proofData) => {
+    const proofFile = proofData.proofFile || proofData.media;
+    if (!proofFile) return;
+    const btnContainer = document.getElementById('taskProofMediaBtnContainer');
+    if (!btnContainer) return;
+    const escMsg = (proofData.message || '').replace(/'/g, "\\'");
+    btnContainer.innerHTML = `
+      <button type="button" class="btn-primary" style="padding: 10px 20px; font-family: 'Orbitron', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; background: linear-gradient(135deg, #00e676, #00b0ff); margin-right: 12px;" onclick="window.openMediaFullModal('${proofFile}', '${proofData.fileType || 'image'}', 'Proof: ${escapeHTML(t.title)}', '${escMsg}')">VIEW MEDIA</button>
+    `;
+  };
+  const sortByTime = (docs) => docs.sort((a, b) => {
+    const aTime = a.submittedAt && typeof a.submittedAt.toDate === 'function' ? a.submittedAt.toDate() : new Date(0);
+    const bTime = b.submittedAt && typeof b.submittedAt.toDate === 'function' ? b.submittedAt.toDate() : new Date(0);
+    return bTime - aTime;
+  });
+  getDocs(query(proofsRef, where('taskId', '==', t.id))).then((snap) => {
+    if (!snap.empty) {
+      showProofBtn(sortByTime(snap.docs.map(d => ({ id: d.id, ...d.data() })))[0]);
+    } else {
+      getDocs(query(proofsRef, where('taskTitle', '==', t.title))).then((snap2) => {
+        if (snap2.empty) return;
+        showProofBtn(sortByTime(snap2.docs.map(d => ({ id: d.id, ...d.data() })))[0]);
+      }).catch(e => console.error("Proof fallback query error:", e));
+    }
+  }).catch(err => console.error("Error querying task proof by ID:", err));
 }
 
 function requestDeleteTask(id) {
