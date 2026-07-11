@@ -76,7 +76,6 @@ const EXEC_MEMBERS = [
 ];
 
 const MGMT_MEMBERS = [
-  { id: 8, name: "TheKiller87", position: "PVP Head", initials: "TK", description: "TheKiller87 is DNMX's PVP head, responsible for training clan members in combat, organizing tactical battle units, and leading frontline engagements to ensure dominance in every skirmish and war.", playstyle: "Aggressive frontliner specializing in quick decision-making, shield tactics, and critical timing during high-pressure combat situations.", responsibilities: "Frontline combat leadership and tactical command. Organizing PVP training sessions and trial duels for members. Coordinating battlefield logistics and defensive operations during clan conflicts.", council: "Management" },
 ];
 
 // Helper to get user photo/initials by In-Game Name
@@ -104,9 +103,7 @@ function getUserDataByIngameName(ingameName) {
   } else if (lowerName === 'cyberelite') {
     if (!user) user = { ingameName: 'CyberElite', name: 'CyberElite', initials: 'CE' };
     user.photoURL = 'assets/cyberpfp.png';
-  } else if (lowerName === 'thekiller87') {
-    if (!user) user = { ingameName: 'TheKiller87', name: 'TheKiller87', initials: 'TK' };
-    user.photoURL = 'assets/tkpfp.png';
+
   } else if (lowerName === 'grim_nightmare') {
     if (!user) user = { ingameName: 'Grim_Nightmare', name: 'Grim_Nightmare', initials: 'GN' };
     user.photoURL = 'assets/grimpfp.png';
