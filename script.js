@@ -462,6 +462,7 @@ onAuthStateChanged(auth, async (user) => {
       const userDocRef = doc(db, 'users', user.uid);
       const userDocSnap = await getDoc(userDocRef);
       let needsSetup = false;
+
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
         CURRENT_USER.ingameName = userData.ingameName || CURRENT_USER.ingameName;
@@ -487,7 +488,6 @@ onAuthStateChanged(auth, async (user) => {
       } else {
         needsSetup = true;
         CURRENT_USER.isAdmin = ADMIN_EMAILS.some(e => e.trim().toLowerCase() === user.email.trim().toLowerCase());
-
         await setDoc(userDocRef, {
           uid: user.uid,
           email: user.email,
@@ -505,9 +505,7 @@ onAuthStateChanged(auth, async (user) => {
       }
 
       if (needsSetup) {
-        setTimeout(() => {
-          promptProfileSetupModal();
-        }, 500);
+        setTimeout(() => promptProfileSetupModal(), 500);
       }
     } catch (err) {
       console.error("Error syncing user profile:", err);
@@ -523,7 +521,6 @@ onAuthStateChanged(auth, async (user) => {
     if (unsubscribeAllUserMessages) { unsubscribeAllUserMessages(); unsubscribeAllUserMessages = null; }
     ACTIVE_CHAT_USER = null;
   }
-
   updateAuthUI();
   updateCreationButtonsVisibility();
   isAuthInitialized = true;
@@ -536,7 +533,6 @@ function updateAuthUI() {
   const chatToggle = document.getElementById('chatToggleButton');
   const uploadImageTrigger = document.getElementById('uploadImageTrigger');
   if (!area) return;
-  area.style.visibility = ''; // reveal once auth state is known
 
   if (CURRENT_USER) {
     const avatarHTML = getAuthorDotHTML(CURRENT_USER.photoURL, CURRENT_USER.initials || 'UN', "width: 24px; height: 24px; font-size: 0.6rem; margin: 0;");
@@ -547,15 +543,13 @@ function updateAuthUI() {
         ${pfpHTML}
         <button class="btn-secondary" onclick="window.promptProfileSetupModal()">PROFILE</button>
         <button class="btn-secondary" onclick="window.signOutUser()">LOG OUT</button>
-      </div>
-    `;
+      </div>`;
 
     if (mobileArea) {
       mobileArea.innerHTML = `
         <button class="btn-secondary" onclick="window.toggleChatPanel(); window.closeMobile();" style="width: 100%;">CHAT</button>
         <button class="btn-secondary" onclick="window.promptProfileSetupModal(); window.closeMobile();" style="width: 100%;">PROFILE</button>
-        <button class="btn-secondary" onclick="window.signOutUser(); window.closeMobile();" style="width: 100%;">LOG OUT</button>
-      `;
+        <button class="btn-secondary" onclick="window.signOutUser(); window.closeMobile();" style="width: 100%;">LOG OUT</button>`;
     }
 
     if (chatToggle) chatToggle.style.display = '';
@@ -563,9 +557,7 @@ function updateAuthUI() {
   } else {
     area.innerHTML = `<button class="btn-secondary" id="authButton" onclick="window.openLoginModal()">LOG IN</button>`;
     if (mobileArea) {
-      mobileArea.innerHTML = `
-        <button class="btn-secondary" onclick="window.openLoginModal(); window.closeMobile();" style="width: 100%;">LOG IN</button>
-      `;
+      mobileArea.innerHTML = `<button class="btn-secondary" onclick="window.openLoginModal(); window.closeMobile();" style="width: 100%;">LOG IN</button>`;
     }
     if (chatToggle) chatToggle.style.display = 'none';
     if (uploadImageTrigger) uploadImageTrigger.style.display = 'none';
