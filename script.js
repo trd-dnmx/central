@@ -536,6 +536,7 @@ function updateAuthUI() {
   const chatToggle = document.getElementById('chatToggleButton');
   const uploadImageTrigger = document.getElementById('uploadImageTrigger');
   if (!area) return;
+  area.style.visibility = ''; // reveal once auth state is known
 
   if (CURRENT_USER) {
     const avatarHTML = getAuthorDotHTML(CURRENT_USER.photoURL, CURRENT_USER.initials || 'UN', "width: 24px; height: 24px; font-size: 0.6rem; margin: 0;");
