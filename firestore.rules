@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────
+    //  HELPERS
+    // ─────────────────────────────────────────────────
+
+    // Is the requester signed in?
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Is the requester one of the whitelisted admins?
+    // Keep this list in sync with ADMIN_EMAILS in script.js.
+    function isAdmin() {
+      return isAuthenticated() &&
+        request.auth.token.email.toLowerCase() in [
+          'noah.dnmx@gmail.com',
+          'tntplayertnt8@gmail.com',
+          'drglass09yt@gmail.com',
+          'cyberelite5253@gmail.com',
+          'budavasile6211@gmail.com',
+          'chickendajaja@gmail.com'
+        ];
+    }
+
+    // Is the requester the owner of a document?
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ─────────────────────────────────────────────────
+    //  USERS
+    // ─────────────────────────────────────────────────
+    // Any authenticated member can read all user profiles (needed for
+    // the buddy list, council cards, presence dots, etc.).
+    // A user can only create their own document (uid-matched).
+    // A user can update their own profile; admins can update any profile.
+    // Only admins can delete user accounts.
+    match /users/{userId} {
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────
+    //  MESSAGES  (1-to-1 DM chat)
+    // ─────────────────────────────────────────────────
+    // Members can only read messages they are part of (sender or receiver).
+    // Creating a message requires the senderUid to match the requester.
+    // Editing / deleting individual messages is admin-only.
+    match /messages/{messageId} {
+      allow read: if isAuthenticated() && (
+        resource.data.senderUid   == request.auth.uid ||
+        resource.data.receiverUid == request.auth.uid
+      );
+      allow create: if isAuthenticated() &&
+        request.resource.data.senderUid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────
+    //  TYPING STATES
+    // ─────────────────────────────────────────────────
+    // chatId format: "uid1_uid2" (alphabetically ordered UIDs).
+    // Only the two participants in a chat may read/write its typing state.
+    match /typing_states/{chatId} {
+      allow read, write: if isAuthenticated() && (
+        chatId.split('_')[0] == request.auth.uid ||
+        chatId.split('_')[1] == request.auth.uid
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    //  ANNOUNCEMENTS
+    // ─────────────────────────────────────────────────
+    // Publicly readable (no sign-in required for the announcements feed).
+    // All write operations (create, update, delete) are admin-only.
+    match /announcements/{announcementId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────
+    //  TASKS
+    // ─────────────────────────────────────────────────
+    // All authenticated members can read tasks.
+    // Only admins can create or delete tasks.
+    // Any authenticated member can update a task (e.g. mark complete,
+    // attach proof). Sensitive fields are validated server-side by the app.
+    match /tasks/{taskId} {
+      allow read:          if isAuthenticated();
+      allow create, delete: if isAdmin();
+      allow update:        if isAuthenticated();
+    }
+
+    // ─────────────────────────────────────────────────
+    //  LOGS  (task completion proofs & review records)
+    // ─────────────────────────────────────────────────
+    // Authenticated members can create proof logs and read their own.
+    // Admins can read all logs and delete any log entry.
+    match /logs/{logId} {
+      allow read:   if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ─────────────────────────────────────────────────
+    //  MEMORIES  (screenshot archive)
+    // ─────────────────────────────────────────────────
+    // Publicly readable (gallery is visible to visitors).
+    // Any authenticated member can upload a new memory.
+    // Deletion is allowed by the memory's creator OR by an admin.
+    // Updates (e.g. caption edits) are admin-only to prevent abuse.
+    match /memories/{memoryId} {
+      allow read:   if true;
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin() ||
+        (resource != null && resource.data.createdByUID == request.auth.uid);
+    }
+  }
+}
